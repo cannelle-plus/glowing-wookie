@@ -1,4 +1,6 @@
-﻿using System;
+﻿using EventStore.ClientAPI;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,33 +14,31 @@ namespace projectionsConsole
         public string[] value { get; set; }    
     }
 
-    public interface Event
+    public abstract class Event
     {
+        public Guid EventId { get; set; }
+        public int Version { get; set; }
+        public string AggregateId { get; set; }
+        public string UserId { get; set; }
+        public string Username { get; set; }
+        public Guid CorrelationId { get; set; }
     }
 
-    public interface GameEvent : Event
+    public class GameCreated : Event
     {
+        public string OwnerId { get; set; }
+        public string OwnerUserName { get; set; }
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+        public string Location { get; set; }
+        public int nbPlayersRequired { get; set; }
+        
+
+        
     }
 
-    public class GameCreated : GameEvent
-    {
-        public Guid GameId { get; set; }
-        public string UserName { get; set; }
-        public DateTime CreationDate { get; set; }
-        public DateTime GameDate { get; set; }
-        public string GameLocation { get; set; }
-    }
+    public class GameJoined :Event {}
 
-    public class GameJoined : GameEvent
-    {
-        public Guid GameId { get; set; }
-        public string UserName { get; set; }
-    }
-
-    public class GameAbandonned : GameEvent
-    {
-        public Guid GameId { get; set; }
-        public string UserName { get; set; }
-    }
+    public class GameAbandonned : Event { }
 
 }
