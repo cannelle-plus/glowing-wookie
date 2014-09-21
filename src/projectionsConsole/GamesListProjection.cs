@@ -29,14 +29,6 @@ namespace projectionsConsole
 
     public class GamesListProjection :Projection
     {
-            //fromAll() 
-            //.when({
-            //    GameCreated : function(s, e) {
-            //        linkTo('Proj-GamesList', e);
-            //        return s;
-            //    }
-            //})
-
         private SQLiteConnection _connection;
         private string _name = "Proj-GamesList";
 
@@ -53,55 +45,78 @@ namespace projectionsConsole
 
         public void Handle(ResolvedEvent e)
         {
-            var jsonMeta = System.Text.Encoding.UTF8.GetString(e.Event.Metadata);
-            var meta = JsonConvert.DeserializeObject<MetaData>(jsonMeta);
-
-            var json = System.Text.Encoding.UTF8.GetString(e.Event.Data);
-            var evt = JsonConvert.DeserializeObject<JsonEvent>(json);
-
-            switch (evt.@case)
+            try
             {
-                case "GameCreated":
-                    Handle(new GameCreated()
-                    {
-                        UserId = meta.UserId,
-                        Username = meta.UserName,
-                        CorrelationId = meta.CorrelationId,
-                        EventId = e.Event.EventId,
-                        Version = e.Event.EventNumber,
-                        AggregateId = e.Event.EventStreamId,
-                        Name = evt.value[0],
-                        OwnerId = evt.value[1],
-                        Date = DateTime.Parse(evt.value[2]),
-                        Location = evt.value[3],
-                        nbPlayersRequired = int.Parse(evt.value[4]),
-                        OwnerUserName = meta.UserName // tweak: I should get it from the event directly like its id
-                    });
-                    break;
-                case "GameJoined":
-                    Handle(new GameJoined()
-                    {
-                        UserId = meta.UserId,
-                        Username = meta.UserName,
-                        CorrelationId = meta.CorrelationId,
-                        EventId = e.Event.EventId,
-                        Version = e.Event.EventNumber,
-                        AggregateId = e.Event.EventStreamId
-                    });
-                    break;
-                case "GameAbandonned":
-                    Handle(new GameJoined()
-                    {
-                        UserId = meta.UserId,
-                        Username = meta.UserName,
-                        CorrelationId = meta.CorrelationId,
-                        EventId = e.Event.EventId,
-                        Version = e.Event.EventNumber,
-                        AggregateId = e.Event.EventStreamId
-                    });
-                    break;
-                default:
-                    break;
+                var sql = "Select count(*) from Projections where name='" + _name + "' and  messageIdProcessed=@eventId;";
+                var cmd = new SQLiteCommand(sql, _connection);
+                cmd.Parameters.Add("@eventId", e.OriginalEvent.EventId.ToString());
+                var isProcessed = (long)cmd.ExecuteScalar();
+
+                if (isProcessed > 0)
+                    throw new Exception("already processed");
+
+                var jsonMeta = System.Text.Encoding.UTF8.GetString( e.Event.Metadata);
+                var meta = JsonConvert.DeserializeObject<MetaData>(jsonMeta);
+
+                var json = System.Text.Encoding.UTF8.GetString(e.Event.Data);
+                var evt = JsonConvert.DeserializeObject<JsonEvent>(json);
+
+            
+                switch (evt.@case)
+                {
+                    case "GameCreated":
+                        Handle(new GameCreated()
+                        {
+                            UserId = meta.UserId,
+                            Username = meta.UserName,
+                            CorrelationId = meta.CorrelationId,
+                            EventId = e.Event.EventId,
+                            Version = e.Event.EventNumber,
+                            AggregateId = e.Event.EventStreamId,
+                            Name = evt.value[0],
+                            OwnerId = evt.value[1],
+                            Date = DateTime.Parse(evt.value[2]),
+                            Location = evt.value[3],
+                            nbPlayersRequired = int.Parse(evt.value[4]),
+                            OwnerUserName = meta.UserName // tweak: I should get it from the event directly like its id
+                        });
+                        break;
+                    case "GameJoined":
+                        Handle(new GameJoined()
+                        {
+                            UserId = meta.UserId,
+                            Username = meta.UserName,
+                            CorrelationId = meta.CorrelationId,
+                            EventId = e.Event.EventId,
+                            Version = e.Event.EventNumber,
+                            AggregateId = e.Event.EventStreamId
+                        });
+                        break;
+                    case "GameAbandonned":
+                        Handle(new GameJoined()
+                        {
+                            UserId = meta.UserId,
+                            Username = meta.UserName,
+                            CorrelationId = meta.CorrelationId,
+                            EventId = e.Event.EventId,
+                            Version = e.Event.EventNumber,
+                            AggregateId = e.Event.EventStreamId
+                        });
+                        break;
+                    default:
+                        break;
+                }
+
+
+
+                var sqlInsertProj = "Insert into Projections VALUES ('" + _name + "',@eventId);";
+                var cmdInsertProj = new SQLiteCommand(sqlInsertProj, _connection);
+                cmdInsertProj.Parameters.Add("@eventId", e.OriginalEvent.EventId.ToString());
+                cmdInsertProj.ExecuteNonQuery();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
             }
         }
         

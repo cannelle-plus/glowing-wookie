@@ -34,7 +34,7 @@ namespace projectionsConsole
             Action<EventStoreCatchUpSubscription> catchup = (s) => Console.WriteLine("Catchup started");
             Action<EventStoreCatchUpSubscription, SubscriptionDropReason, Exception> error = (s, dr, e) => p.OnError(e);
 
-            _connection.SubscribeToStreamFrom(p.Name, EventStore.ClientAPI.StreamPosition.Start, _resolveLinkTos, next, catchup, error, _user,500);
+            _connection.SubscribeToStreamFrom(p.Name, null , _resolveLinkTos, next, catchup, error, _user,500);
         }
 
 

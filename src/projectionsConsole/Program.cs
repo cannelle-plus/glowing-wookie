@@ -8,6 +8,7 @@ using System.Net;
 using EventStore.ClientAPI.SystemData;
 using Newtonsoft.Json;
 using System.Data.SQLite;
+using System.Configuration;
 
 namespace projectionsConsole
 {
@@ -20,14 +21,27 @@ namespace projectionsConsole
         {
             Console.Write("projection started...");
 
+            var EventStoreHost = ConfigurationManager.AppSettings["EventStoreHost"];
+            var EventStoreHttpPort = int.Parse(ConfigurationManager.AppSettings["EventStoreHttpPort"]);
+            var EventStoreTCPPort = int.Parse(ConfigurationManager.AppSettings["EventStoreTCPPort"]);
+
+            var tcpEndPoint = new IPEndPoint(System.Net.IPAddress.Parse(EventStoreHost), EventStoreTCPPort);
+            var httpendPoint = new IPEndPoint(System.Net.IPAddress.Parse(EventStoreHost), EventStoreHttpPort);
+
             var user = new UserCredentials("admin", "changeit");
-            var endPoint = new IPEndPoint(System.Net.IPAddress.Parse("127.0.0.1"), 1113);
-            var conn = EventStoreConnection.Create(endPoint);
+            
+            var conn = EventStoreConnection.Create(tcpEndPoint);
             conn.Connect();
 
-            var subscription = new Subscription(conn,true, user);
+            var log = new EventStore.ClientAPI.Common.Log.ConsoleLogger();
+            var pm = new EventStore.ClientAPI.ProjectionsManager(log, httpendPoint);
 
-            using (var sqliteConnection = new SQLiteConnection(@"Data Source=D:\Projects\db-wookie\db\Bear2Bear.db;Version=3"))
+            var proj = System.IO.File.ReadAllText(@"..\..\projections\gameListProjection.js");
+            pm.CreateContinuous("gameListProjection", proj, user);
+
+            var subscription = new Subscription(conn,true, user);
+            var b2bConnstring = ConfigurationManager.ConnectionStrings["bear2bear"];
+            using (var sqliteConnection = new SQLiteConnection(b2bConnstring.ConnectionString))
             { 
                 //setting up projections
                 sqliteConnection.Open();
