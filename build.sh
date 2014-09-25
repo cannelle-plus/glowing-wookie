@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ ! -f packages/FAKE/tools/FAKE.exe ]; then
-  mono .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion
+  mono --runtime=v4.0 .nuget/NuGet.exe install FAKE -OutputDirectory packages -ExcludeVersion
 fi
 #workaround assembly resolution issues in build.fsx
 export FSHARPI=`which fsharpi`
