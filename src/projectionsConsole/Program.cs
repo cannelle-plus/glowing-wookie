@@ -7,7 +7,7 @@ using EventStore.ClientAPI;
 using System.Net;
 using EventStore.ClientAPI.SystemData;
 using Newtonsoft.Json;
-using System.Data.SQLite;
+
 using System.Configuration;
 
 namespace projectionsConsole
@@ -15,7 +15,15 @@ namespace projectionsConsole
     class Program
     {
 
-        
+        static bool isMonoRuntime = Type.GetType("Mono.Runtime") != null;
+
+        static ISqliteConnection CreateConnection(string dbConnection)
+        {
+            if (isMonoRuntime)
+                return new SqliteConnectionMono(dbConnection);
+            else
+                return new SqliteConnectionWin(dbConnection);
+        }
 
         static void Main(string[] args)
         {
@@ -41,7 +49,7 @@ namespace projectionsConsole
 
             var subscription = new Subscription(conn,true, user);
             var b2bConnstring = ConfigurationManager.ConnectionStrings["bear2bear"];
-            using (var sqliteConnection = new SQLiteConnection(b2bConnstring.ConnectionString))
+            using (var sqliteConnection = CreateConnection(b2bConnstring.ConnectionString))
             { 
                 //setting up projections
                 sqliteConnection.Open();

@@ -11,14 +11,7 @@ using Newtonsoft.Json;
 
 namespace projectionsConsole
 {
-    public static class sqliteExtension
-    {
-        public static void Add(this SQLiteParameterCollection collection, string name, string value)
-        {
-            collection.Add(new SQLiteParameter(name));
-            collection[name].Value = value;
-        }
-    }
+    
 
     public interface Projection
     {
@@ -29,7 +22,7 @@ namespace projectionsConsole
 
     public class GamesListProjection :Projection
     {
-        private SQLiteConnection _connection;
+        private ISqliteConnection _connection;
         private string _name = "Proj-GamesList";
 
         public string Name 
@@ -37,7 +30,7 @@ namespace projectionsConsole
             get { return _name; } 
         }
 
-        public GamesListProjection( SQLiteConnection connection)
+        public GamesListProjection( ISqliteConnection connection)
         {
             _connection = connection;
             
@@ -48,8 +41,8 @@ namespace projectionsConsole
             try
             {
                 var sql = "Select count(*) from Projections where name='" + _name + "' and  messageIdProcessed=@eventId;";
-                var cmd = new SQLiteCommand(sql, _connection);
-                cmd.Parameters.Add("@eventId", e.OriginalEvent.EventId.ToString());
+                var cmd = _connection.CreateCommand(sql);
+                cmd.Add("@eventId", e.OriginalEvent.EventId.ToString());
                 var isProcessed = (long)cmd.ExecuteScalar();
 
                 if (isProcessed > 0)
@@ -110,8 +103,8 @@ namespace projectionsConsole
 
 
                 var sqlInsertProj = "Insert into Projections VALUES ('" + _name + "',@eventId);";
-                var cmdInsertProj = new SQLiteCommand(sqlInsertProj, _connection);
-                cmdInsertProj.Parameters.Add("@eventId", e.OriginalEvent.EventId.ToString());
+                var cmdInsertProj = _connection.CreateCommand(sqlInsertProj);
+                cmdInsertProj.Add("@eventId", e.OriginalEvent.EventId.ToString());
                 cmdInsertProj.ExecuteNonQuery();
             }
             catch(Exception ex)
@@ -131,16 +124,16 @@ namespace projectionsConsole
         {
             
             var sql = "Insert into GamesList VALUES (@id,0, @name,@ownerId,@ownerUserName, @begins, @location, @players,@nbPlayers, @maxPlayers);";
-            var cmd = new SQLiteCommand(sql,_connection);
-            cmd.Parameters.Add("@id", evt.AggregateId.ToString());
-            cmd.Parameters.Add("@name", evt.Name);
-            cmd.Parameters.Add("@ownerId", evt.OwnerId);
-            cmd.Parameters.Add("@ownerUserName", evt.OwnerUserName);
-            cmd.Parameters.Add("@begins", evt.Date.ToString());
-            cmd.Parameters.Add("@location", evt.Location.ToString());
-            cmd.Parameters.Add("@players", evt.Username);
-            cmd.Parameters.Add("@nbPlayers", "1");
-            cmd.Parameters.Add("@maxPlayers", evt.nbPlayersRequired.ToString());
+            var cmd = _connection.CreateCommand(sql);
+            cmd.Add("@id", evt.AggregateId.ToString());
+            cmd.Add("@name", evt.Name);
+            cmd.Add("@ownerId", evt.OwnerId);
+            cmd.Add("@ownerUserName", evt.OwnerUserName);
+            cmd.Add("@begins", evt.Date.ToString());
+            cmd.Add("@location", evt.Location.ToString());
+            cmd.Add("@players", evt.Username);
+            cmd.Add("@nbPlayers", "1");
+            cmd.Add("@maxPlayers", evt.nbPlayersRequired.ToString());
 
             cmd.ExecuteNonQuery();
         }
@@ -148,9 +141,9 @@ namespace projectionsConsole
         public void Handle(GameJoined evt)
         {
             var sql = "update GamesList set players = players || \" \"|| @newPlayer where id=@id;";
-            var cmd = new SQLiteCommand(sql, _connection);
-            cmd.Parameters.Add("@id", evt.AggregateId.ToString());
-            cmd.Parameters.Add("@newPlayer", evt.Username.ToString());
+            var cmd = _connection.CreateCommand(sql);
+            cmd.Add("@id", evt.AggregateId.ToString());
+            cmd.Add("@newPlayer", evt.Username.ToString());
 
             cmd.ExecuteNonQuery();
         }
@@ -158,9 +151,9 @@ namespace projectionsConsole
         public void Handle(GameAbandonned evt)
         {
             var sql = "update GamesList set players = REPLACE(players, @oldPlayer,'') where idd=@d;";
-            var cmd = new SQLiteCommand(sql, _connection);
-            cmd.Parameters.Add("@id", evt.AggregateId.ToString());
-            cmd.Parameters.Add("@oldPlayer", evt.Username.ToString());
+            var cmd = _connection.CreateCommand(sql);
+            cmd.Add("@id", evt.AggregateId.ToString());
+            cmd.Add("@oldPlayer", evt.Username.ToString());
 
             cmd.ExecuteNonQuery();
 
