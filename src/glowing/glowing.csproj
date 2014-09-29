@@ -80,7 +80,7 @@
       <Project>{98a13081-d297-463f-859d-e81fb22b011e}</Project>
       <Name>glowing.core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\glowing.Projections\glowing.projections.csproj">
+    <ProjectReference Include="..\glowing.projections\glowing.projections.csproj">
       <Project>{d6834e3f-5317-41af-8648-69f840181323}</Project>
       <Name>glowing.projections</Name>
     </ProjectReference>
