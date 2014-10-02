@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using glowing.core;
 using System.Net;
 using EventStore.ClientAPI.SystemData;
+using System.Configuration;
 
 namespace glowing.projections
 {
@@ -32,9 +33,11 @@ namespace glowing.projections
             var log = new EventStore.ClientAPI.Common.Log.ConsoleLogger();
             var pm = new EventStore.ClientAPI.ProjectionsManager(log, httpendPoint);
 
+            var projectionsPath = ConfigurationManager.AppSettings["projectionsPath"];
+
             //test if projections is not already created
             //should be amended
-            var proj = System.IO.File.ReadAllText(@"..\..\projections\gameListProjection.js");
+            var proj = System.IO.File.ReadAllText( projectionsPath + "gameListProjection.js");
             try
             { 
                 pm.CreateContinuous("gameListProjection", proj, user);
