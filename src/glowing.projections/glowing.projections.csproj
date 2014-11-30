@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameEvents.cs" />
+    <Compile Include="BearProjection.cs" />
     <Compile Include="GamesListProjection.cs" />
     <Compile Include="MetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -76,6 +77,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="projections\bearProjection.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="projections\gameListProjection.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

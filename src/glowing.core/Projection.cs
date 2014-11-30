@@ -10,6 +10,8 @@ namespace glowing.core
     public interface Projection
     {
         string Name { get; }
+        int? LastCheckPoint { get; }
+        void Start();
         void Handle(ResolvedEvent e);
         void OnError(Exception e);
     }

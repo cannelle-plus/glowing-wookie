@@ -22,6 +22,15 @@ namespace glowing.projections
         public string UserId { get; set; }
         public string Username { get; set; }
         public Guid CorrelationId { get; set; }
+
+        public string getAggregateId()
+        {
+            var indexGuid = AggregateId.IndexOf("-");
+            if (indexGuid > -1 && AggregateId.Length > 1)
+                return AggregateId.Substring(indexGuid + 1);
+            else
+                return AggregateId;
+        }
     }
 
     public class GameCreated : Event
@@ -40,5 +49,12 @@ namespace glowing.projections
     public class GameJoined :Event {}
 
     public class GameAbandonned : Event { }
+
+    public class SignedIn : Event {
+        public string bearName { get; set; }
+        public string bearAvatarId { get; set; }
+        
+        
+    }
 
 }

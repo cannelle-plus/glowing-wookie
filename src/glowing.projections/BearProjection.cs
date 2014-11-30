@@ -13,10 +13,10 @@ using System.Configuration;
 namespace glowing.projections
 {
 
-    public class GamesListProjection : Projection
+    public class BearListProjection : Projection
     {
         private ISqliteConnection _connection;
-        private string _name = "Proj-GamesList";
+        private string _name = "Proj-BearList";
         private int? _lastCheckPoint = null;
         private string _username;
         private string _password;
@@ -33,7 +33,7 @@ namespace glowing.projections
             get { return _lastCheckPoint; }
         }
 
-        public GamesListProjection(IPEndPoint httpendPoint, string username, string password, ISqliteConnection connection)
+        public BearListProjection(IPEndPoint httpendPoint, string username, string password, ISqliteConnection connection)
         {
             _connection = connection;
             _username = username;
@@ -53,14 +53,14 @@ namespace glowing.projections
 
             //test if projections is not already created
             //should be amended
-            var proj = System.IO.File.ReadAllText(projectionsPath + "gameListProjection.js");
+            var proj = System.IO.File.ReadAllText(projectionsPath + "bearProjection.js");
             try
             {
-                pm.CreateContinuous("gameListProjection", proj, user);
+                pm.CreateContinuous("bearProjection", proj, user);
             }
             catch (Exception e)
             {
-                Console.WriteLine("the projection gameListProjection was not created ");
+                Console.WriteLine("the projection bearProjection was not created ");
                 Console.WriteLine(proj);
             }
            
@@ -88,8 +88,8 @@ namespace glowing.projections
             
                 switch (evt.@case)
                 {
-                    case "GameScheduled":
-                        Handle(new GameCreated()
+                    case "SignedIn":
+                        Handle(new SignedIn()
                         {
                             UserId = meta.UserId,
                             Username = meta.UserName,
@@ -97,34 +97,8 @@ namespace glowing.projections
                             EventId = e.Event.EventId,
                             Version = e.Event.EventNumber,
                             AggregateId = e.Event.EventStreamId,
-                            Name = evt.value[0],
-                            OwnerId = evt.value[1],
-                            Date = DateTime.Parse(evt.value[2]),
-                            Location = evt.value[3],
-                            nbPlayersRequired = int.Parse(evt.value[4]),
-                            OwnerUserName = meta.UserName // tweak: I should get it from the event directly like its id
-                        });
-                        break;
-                    case "GameJoined":
-                        Handle(new GameJoined()
-                        {
-                            UserId = meta.UserId,
-                            Username = meta.UserName,
-                            CorrelationId = meta.CorrelationId,
-                            EventId = e.Event.EventId,
-                            Version = e.Event.EventNumber,
-                            AggregateId = e.Event.EventStreamId
-                        });
-                        break;
-                    case "GameAbandonned":
-                        Handle(new GameJoined()
-                        {
-                            UserId = meta.UserId,
-                            Username = meta.UserName,
-                            CorrelationId = meta.CorrelationId,
-                            EventId = e.Event.EventId,
-                            Version = e.Event.EventNumber,
-                            AggregateId = e.Event.EventStreamId
+                            bearName = evt.value[0],
+                            bearAvatarId = evt.value[1]
                         });
                         break;
                     default:
@@ -149,44 +123,20 @@ namespace glowing.projections
         }
         
 
-        private void Handle(GameCreated evt)
+        private void Handle(SignedIn evt)
         {
-                        
-            var sql = "Insert into GamesList VALUES (@id,0, @name,@ownerId,@ownerUserName, @begins, @location, @players,@nbPlayers, @maxPlayers);";
+
+            var sql = "Insert into bears VALUES (@id, @username,@avatarId); Insert into Users VALUES (@userId, @id);";
             var cmd = _connection.CreateCommand(sql);
-            cmd.Add("@id", evt.getAggregateId());
-            cmd.Add("@name", evt.Name);
-            cmd.Add("@ownerId", evt.OwnerId);
-            cmd.Add("@ownerUserName", evt.OwnerUserName);
-            cmd.Add("@begins", evt.Date.ToString());
-            cmd.Add("@location", evt.Location.ToString());
-            cmd.Add("@players", evt.Username);
-            cmd.Add("@nbPlayers", "1");
-            cmd.Add("@maxPlayers", evt.nbPlayersRequired.ToString());
+            cmd.Add("@id", evt.AggregateId.ToString());
+            cmd.Add("@username", evt.bearName);
+            cmd.Add("@avatarId", evt.bearAvatarId);
+            cmd.Add("@userId", evt.UserId);
 
             cmd.ExecuteNonQuery();
         }
 
-        public void Handle(GameJoined evt)
-        {
-            var sql = "update GamesList set players = players || \" \"|| @newPlayer where id=@id;";
-            var cmd = _connection.CreateCommand(sql);
-            cmd.Add("@id", evt.getAggregateId());
-            cmd.Add("@newPlayer", evt.Username.ToString());
-
-            cmd.ExecuteNonQuery();
-        }
-
-        public void Handle(GameAbandonned evt)
-        {
-            var sql = "update GamesList set players = REPLACE(players, @oldPlayer,'') where id=@id;";
-            var cmd = _connection.CreateCommand(sql);
-            cmd.Add("@id", evt.getAggregateId());
-            cmd.Add("@oldPlayer", evt.Username.ToString());
-
-            cmd.ExecuteNonQuery();
-
-        }
+        
 
         
     }

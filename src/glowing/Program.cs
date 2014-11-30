@@ -52,10 +52,10 @@ namespace glowing
                 
                 //wiring up event to dedicated projections
                 projections.Add(new GamesListProjection(httpendPoint, username,password, sqliteConnection));
+                projections.Add(new BearListProjection(httpendPoint, username, password, sqliteConnection));
 
                 projections.ForEach((p) => subscription.subscribeTo(p));
 
-                Console.Write("projection working...");
                 Console.Read();
             }
 
