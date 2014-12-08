@@ -98,7 +98,8 @@ namespace glowing.projections
                             Version = e.Event.EventNumber,
                             AggregateId = e.Event.EventStreamId,
                             bearName = evt.value[0],
-                            bearAvatarId = evt.value[1]
+                            bearSocialId = evt.value[1],
+                            bearAvatarId = evt.value[2]
                         });
                         break;
                     default:
@@ -126,12 +127,12 @@ namespace glowing.projections
         private void Handle(SignedIn evt)
         {
 
-            var sql = "Insert into bears VALUES (@id, @username,@avatarId); Insert into Users VALUES (@userId, @id);";
+            var sql = "Insert into bears VALUES (@id, @username,@avatarId); Insert into Users VALUES (@bearSocialId, @id);";
             var cmd = _connection.CreateCommand(sql);
-            cmd.Add("@id", evt.AggregateId.ToString());
+            cmd.Add("@id", evt.getAggregateId());
             cmd.Add("@username", evt.bearName);
             cmd.Add("@avatarId", evt.bearAvatarId);
-            cmd.Add("@userId", evt.UserId);
+            cmd.Add("@bearSocialId", evt.bearSocialId);
 
             cmd.ExecuteNonQuery();
         }

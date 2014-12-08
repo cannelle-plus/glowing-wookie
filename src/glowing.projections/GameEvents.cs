@@ -53,7 +53,8 @@ namespace glowing.projections
     public class SignedIn : Event {
         public string bearName { get; set; }
         public string bearAvatarId { get; set; }
-        
+        public string bearSocialId { get; set; }
+       
         
     }
 
