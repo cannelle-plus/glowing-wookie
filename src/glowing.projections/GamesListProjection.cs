@@ -117,7 +117,7 @@ namespace glowing.projections
                         });
                         break;
                     case "GameAbandonned":
-                        Handle(new GameJoined()
+                        Handle(new GameAbandonned()
                         {
                             UserId = meta.UserId,
                             Username = meta.UserName,
@@ -169,7 +169,7 @@ namespace glowing.projections
 
         public void Handle(GameJoined evt)
         {
-            var sql = "update GamesList set players = players || \" \"|| @newPlayer where id=@id;";
+            var sql = "update GamesList set players = players || \" \"|| @newPlayer ,nbPlayers= nbPlayers+1 where id=@id;";
             var cmd = _connection.CreateCommand(sql);
             cmd.Add("@id", evt.getAggregateId());
             cmd.Add("@newPlayer", evt.Username.ToString());
@@ -179,7 +179,7 @@ namespace glowing.projections
 
         public void Handle(GameAbandonned evt)
         {
-            var sql = "update GamesList set players = REPLACE(players, @oldPlayer,'') where id=@id;";
+            var sql = "update GamesList set players = REPLACE(players, @oldPlayer,''),nbPlayers= nbPlayers-1 where id=@id;";
             var cmd = _connection.CreateCommand(sql);
             cmd.Add("@id", evt.getAggregateId());
             cmd.Add("@oldPlayer", evt.Username.ToString());
