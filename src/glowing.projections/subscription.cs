@@ -22,13 +22,15 @@ namespace glowing.projections
         private IPEndPoint _tcpEndPoint;
         private bool _isConnected;
         private Dictionary<string, Projection> _projections = new Dictionary<string, Projection>();
+        private Action _onError;
 
 
-        public Subscription(IPEndPoint tcpEndPoint,string username, string password, bool resolveLinkTos)
+        public Subscription(IPEndPoint tcpEndPoint,string username, string password, bool resolveLinkTos, Action onError)
         {
             _user = new UserCredentials(username,password);
             _resolveLinkTos = resolveLinkTos;
             _tcpEndPoint = tcpEndPoint;
+            _onError = onError;
 
             ConnectToEventStore();
         }
@@ -41,6 +43,7 @@ namespace glowing.projections
             _connection = EventStoreConnection.Create(_tcpEndPoint);
             _connection.Reconnecting += (sender, e) => {
                 Console.WriteLine("reconnecting....");
+                _onError();
             };
             _connection.Connected += (sender, e) => {
                 if (!_isConnected)
@@ -60,7 +63,6 @@ namespace glowing.projections
 
             switch (dr)
             {
-                
                 case SubscriptionDropReason.ConnectionClosed:
                     _isConnected = false;
                     Console.WriteLine(e);
@@ -107,6 +109,12 @@ namespace glowing.projections
 
             if (_isConnected)
                 startProjection(p);
+        }
+
+        public void Dispose()
+        {
+            if (_connection != null)
+                _connection.Dispose();
         }
 
 

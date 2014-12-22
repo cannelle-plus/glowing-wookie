@@ -8,6 +8,7 @@ using glowing.db;
 using glowing.projections;
 using glowing.core;
 using System.Configuration;
+using System.Threading;
 
 namespace glowing
 {
@@ -15,6 +16,9 @@ namespace glowing
     {
 
         static bool isMonoRuntime = Type.GetType("Mono.Runtime") != null;
+        static bool shutDown = false;
+        static EventWaitHandle _waitHandle = new AutoResetEvent(false);
+        
 
         static ISqliteConnection CreateConnection(string dbConnection)
         {
@@ -27,7 +31,7 @@ namespace glowing
         static void Main(string[] args)
         {
             Console.Write("projection started...");
-
+            
             var EventStoreHost = ConfigurationManager.AppSettings["EventStoreHost"];
             var EventStoreHttpPort = int.Parse(ConfigurationManager.AppSettings["EventStoreHttpPort"]);
             var EventStoreTCPPort = int.Parse(ConfigurationManager.AppSettings["EventStoreTCPPort"]);
@@ -38,30 +42,35 @@ namespace glowing
             var username = "admin";
             var password = "changeit";
 
-            var subscription = new Subscription(tcpEndPoint, username, password, true);
+            var subscription = new Subscription(tcpEndPoint, username, password, true, onError);
 
             var b2bConnstring = ConfigurationManager.ConnectionStrings["bear2bear"];
-            using (var sqliteConnection = CreateConnection(b2bConnstring.ConnectionString))
-            { 
-                //setting up projections
-                sqliteConnection.Open();
+            var sqliteConnection = CreateConnection(b2bConnstring.ConnectionString);
+        
+            //setting up projections
+            sqliteConnection.Open();
 
-                //lsit of all projections availables
-                var projections = new List<Projection>();
-                
-                
-                //wiring up event to dedicated projections
-                projections.Add(new GamesListProjection(httpendPoint, username,password, sqliteConnection));
-                projections.Add(new BearListProjection(httpendPoint, username, password, sqliteConnection));
+            //lsit of all projections availables
+            var projections = new List<Projection>();
 
-                projections.ForEach((p) => subscription.subscribeTo(p));
+            //wiring up event to dedicated projections
+            projections.Add(new GamesListProjection(httpendPoint, username, password, sqliteConnection, onError));
+            projections.Add(new BearListProjection(httpendPoint, username, password, sqliteConnection, onError));
 
-                Console.Read();
-            }
+            projections.ForEach((p) => subscription.subscribeTo(p));
+
+            _waitHandle.WaitOne();
+
+            subscription.Dispose();
+            sqliteConnection.Dispose();
 
             Console.Write("projection finished...");
             
-            
+        }
+
+        public static void onError()
+        {
+            _waitHandle.Set();
         }
 
     }

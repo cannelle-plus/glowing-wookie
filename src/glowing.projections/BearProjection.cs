@@ -22,6 +22,7 @@ namespace glowing.projections
         private string _password;
         private IPEndPoint _httpendPoint;
         private bool _isStarted;
+        private Action _onError;
 
         public string Name 
         { 
@@ -33,12 +34,13 @@ namespace glowing.projections
             get { return _lastCheckPoint; }
         }
 
-        public BearListProjection(IPEndPoint httpendPoint, string username, string password, ISqliteConnection connection)
+        public BearListProjection(IPEndPoint httpendPoint, string username, string password, ISqliteConnection connection, Action onError)
         {
             _connection = connection;
             _username = username;
             _password = password;
             _httpendPoint = httpendPoint;
+            _onError = onError;
         }
 
 
@@ -121,6 +123,7 @@ namespace glowing.projections
         public void OnError(Exception e)
         {
             Console.WriteLine(e);
+            _onError();
         }
         
 
