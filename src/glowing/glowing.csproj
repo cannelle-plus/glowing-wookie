@@ -72,6 +72,12 @@
     <Compile Include="db\SqliteWin.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App.config_prod">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App.config_linux">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="App.config" />
     <None Include="packages.config">
       <SubType>Designer</SubType>

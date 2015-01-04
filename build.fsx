@@ -163,12 +163,26 @@ Target "SourceLink" (fun _ ->
 // --------------------------------------------------------------------------------------
 // deploy the app
 
-Target "Deploy" (fun _ ->
+let deployTarget t = (deployDir + t + "/", t)
+
+let deployTask  (deployTarget,t) = 
     let from = directoryInfo(appToDeploy)
-    let towards =directoryInfo(deployDir)
+    let towards =directoryInfo(deployTarget)
     copyRecursive  from towards  false
     |> Log "Deploy-Output:"
-)
+    (deployTarget,t)
+
+let setConfig (deployTarget,t) =
+    DeleteFile (deployTarget + "glowing.exe.config")
+    Rename (deployTarget + "glowing.exe.config") (deployTarget + "app.config_" + t)
+
+Target "Deploy" (fun _ ->
+    ["windows"; "linux"; "prod"]
+    |> List.map deployTarget
+    |> List.map deployTask 
+    |> List.filter (fun (p,t) -> t<> "windows")
+    |> List.iter setConfig 
+    )
 
 // --------------------------------------------------------------------------------------
 // Generate the documentation
