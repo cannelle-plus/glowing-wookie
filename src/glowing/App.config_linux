@@ -10,7 +10,7 @@
     <add key="projectionsPath" value="projections/"/>
   </appSettings>
   <connectionStrings>
-    <add name="bear2bear" connectionString="Data Source=Data Source=/home/yoann/bearToBear/db-wookie/db/Bear2Bear.db.db;Version=3"/>
+    <add name="bear2bear" connectionString="Data Source=/home/yoann/bearToBear/db-wookie/db/Bear2Bear.db;Version=3"/>
   </connectionStrings>
   <system.data>
     <DbProviderFactories>

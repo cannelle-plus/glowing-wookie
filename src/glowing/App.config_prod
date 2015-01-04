@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <configuration>
-    <startup> 
-        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
-    </startup>
-  <appSettings>
-    <add key="EventStoreHost" value="127.0.0.1"/>
-    <add key="EventStoreHttpPort" value="2113"/>
-    <add key="EventStoreTCPPort" value="1113"/>
-    <add key="projectionsPath" value="projections/"/>
-  </appSettings>
-  <connectionStrings>
-    <add name="bear2bear" connectionString="Data Source=Data Source=/home/ubuntu/bearToBear/db-wookie/db/Bear2Bear.db.db;Version=3"/>
-  </connectionStrings>
-  <system.data>
-    <DbProviderFactories>
-      <remove invariant="System.Data.SQLite" />
-      <add name="SQLite Data Provider" invariant="System.Data.SQLite" description=".Net Framework Data Provider for SQLite" type="System.Data.SQLite.SQLiteFactory, System.Data.SQLite" />
-    </DbProviderFactories>
-  </system.data>
-  <system.net>
-    <settings>
-      <httpWebRequest useUnsafeHeaderParsing="true" />
-    </settings>
-  </system.net>
-</configuration>
+	    <startup> 
+				        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
+								    </startup>
+										  <appSettings>
+												    <add key="EventStoreHost" value="127.0.0.1"/>
+														    <add key="EventStoreHttpPort" value="2113"/>
+																    <add key="EventStoreTCPPort" value="1113"/>
+																		    <add key="projectionsPath" value="projections/"/>
+																				  </appSettings>
+																					  <connectionStrings>
+																							    <add name="bear2bear" connectionString="Data Source=/home/ubuntu/bearToBear/db-wookie/db/Bear2Bear.db;Version=3"/>
+																									  </connectionStrings>
+																										  <system.data>
+																												    <DbProviderFactories>
+																															      <remove invariant="System.Data.SQLite" />
+																																		      <add name="SQLite Data Provider" invariant="System.Data.SQLite" description=".Net Framework Data Provider for SQLite" type="System.Data.SQLite.SQLiteFactory, System.Data.SQLite" />
+																																					    </DbProviderFactories>
+																																							  </system.data>
+																																								  <system.net>
+																																										    <settings>
+																																													      <httpWebRequest useUnsafeHeaderParsing="true" />
+																																																    </settings>
+																																																		  </system.net>
+																																																		</configuration>

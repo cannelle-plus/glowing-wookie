@@ -174,7 +174,7 @@ let deployTask  (deployTarget,t) =
 
 let setConfig (deployTarget,t) =
     DeleteFile (deployTarget + "glowing.exe.config")
-    Rename (deployTarget + "glowing.exe.config") (deployTarget + "app.config_" + t)
+    Rename (deployTarget + "glowing.exe.config") (deployTarget + "App.config_" + t)
 
 Target "Deploy" (fun _ ->
     ["windows"; "linux"; "prod"]
